@@ -2,7 +2,6 @@
 module Types.Request where
 
 import Data.Time.Clock
-import Web.Vorple
 
 import Types.Core
 
@@ -46,6 +45,4 @@ data Request =
   { reqEntry :: Id
   , reqExternalType :: External
   } deriving (Eq, Ord, Read, Show)
-
-deriveJSON (drop 3) ''Request
 

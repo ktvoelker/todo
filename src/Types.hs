@@ -8,6 +8,7 @@ module Types (
   , module Types.Database
   , module Types.Entry
   , module Types.Request
+  , module Types.Response
   , module Types.Tag
   , module Types.User
   ) where
@@ -20,7 +21,9 @@ import Data.Record.StateFields.Containers
 import Types.Core
 import Types.Database
 import Types.Entry
+import Types.JSON ()
 import Types.Request
+import Types.Response
 import Types.SafeCopy ()
 import Types.Tag
 import Types.User
