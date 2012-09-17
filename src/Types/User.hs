@@ -2,7 +2,6 @@
 module Types.User where
 
 import Data.Record.StateFields
-import Data.Typeable
 
 import qualified Data.Map as M
 
@@ -15,5 +14,5 @@ record "u" [d| data User = User {
   , password :: String
   , tags :: M.Map Id Tag
   , entries :: M.Map Id Entry
-  } deriving (Eq, Ord, Read, Show, Typeable) |]
+  } deriving (Eq, Ord, Read, Show) |]
 
