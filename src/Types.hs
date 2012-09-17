@@ -15,6 +15,8 @@ module Types (
   , module Types.User
   ) where
 
+import qualified Data.Map as M
+
 import Data.Acid
 import Data.Time.Clock
 import Data.Record.StateFields
@@ -34,11 +36,6 @@ import Types.User
 defaultSession :: Session
 defaultSession = Session { _sessionUser = Nothing }
 
-emptyQuery :: Query Database ()
-emptyQuery = return ()
-
-emptyUpdate :: Update Database ()
-emptyUpdate = return ()
-
-makeAcidic ''Database ['emptyQuery, 'emptyUpdate]
+emptyDatabase :: Database
+emptyDatabase = Database { _dbUsers = M.empty }
 

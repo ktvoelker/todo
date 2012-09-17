@@ -1,4 +1,5 @@
 DeriveDataTypeable
 RecordWildCards
+StandaloneDeriving
 TemplateHaskell
 TypeFamilies

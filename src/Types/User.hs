@@ -14,5 +14,6 @@ record "u" [d| data User = User {
   , password :: String
   , tags :: M.Map Id Tag
   , entries :: M.Map Id Entry
+  , id :: Id
   } deriving (Eq, Ord, Read, Show) |]
 

@@ -13,6 +13,8 @@ deriveJSON (drop 1) ''Entry
 
 deriveJSON (drop 3) ''Request
 
+deriveJSON id ''Error
+
 deriveJSON (drop 4) ''Response
 
 deriveJSON (drop 7) ''Session

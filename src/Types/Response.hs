@@ -6,6 +6,9 @@ import Data.Time.Clock
 import Types.Entry
 import Types.Tag
 
+data Error = ENotImplemented | EBadLogin | EUserExists | EInvalidPassword
+  deriving (Eq, Ord, Read, Show)
+
 data Response =
   RespEmpty |
   RespEntry Entry |
@@ -14,7 +17,7 @@ data Response =
   RespTime UTCTime |
   RespUrl String |
   RespError
-  { respCode :: Int
+  { respType :: Error
   , respMessage :: String
   } deriving (Eq, Ord, Read, Show)
 
