@@ -32,7 +32,7 @@ import Types.Tag
 import Types.User
 
 defaultSession :: Session
-defaultSession = Session Nothing
+defaultSession = Session { _sessionUser = Nothing }
 
 emptyQuery :: Query Database ()
 emptyQuery = return ()

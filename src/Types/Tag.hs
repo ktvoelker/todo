@@ -9,3 +9,4 @@ record "t" [d| data Tag = Tag {
   , isMood :: Bool
   , color :: Maybe String
   } deriving (Eq, Ord, Read, Show, Typeable) |]
+
