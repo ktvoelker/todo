@@ -4,11 +4,13 @@ module Types (
   , module Data.Time.Clock
   , module Data.Record.StateFields
   , module Data.Record.StateFields.Containers
+  , module Types
   , module Types.Core
   , module Types.Database
   , module Types.Entry
   , module Types.Request
   , module Types.Response
+  , module Types.Session
   , module Types.Tag
   , module Types.User
   ) where
@@ -25,8 +27,12 @@ import Types.JSON ()
 import Types.Request
 import Types.Response
 import Types.SafeCopy ()
+import Types.Session
 import Types.Tag
 import Types.User
+
+defaultSession :: Session
+defaultSession = Session Nothing
 
 emptyQuery :: Query Database ()
 emptyQuery = return ()

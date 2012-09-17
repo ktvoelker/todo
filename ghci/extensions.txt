@@ -1,3 +1,4 @@
 DeriveDataTypeable
+RecordWildCards
 TemplateHaskell
 TypeFamilies

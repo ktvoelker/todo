@@ -36,6 +36,7 @@ Executable todo
     vorple -any
   default-extensions:
     DeriveDataTypeable
+    RecordWildCards
     TemplateHaskell
     TypeFamilies
 
