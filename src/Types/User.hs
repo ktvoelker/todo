@@ -9,11 +9,19 @@ import Types.Core
 import Types.Entry
 import Types.Tag
 
-record "u" [d| data User = User {
+record "up" [d| data UserProfile = UserProfile {
     name :: String
-  , password :: String
-  , tags :: M.Map Id Tag
-  , entries :: M.Map Id Entry
-  , id :: Id
   } deriving (Eq, Ord, Read, Show) |]
+
+record "ud" [d| data UserData = UserData {
+    tags :: M.Map Id Tag
+  , entries :: M.Map Id Entry
+  } deriving (Eq, Ord, Read, Show) |]
+
+record "u" [d| data User = User {
+    id :: Id
+  , password :: String
+  , profile :: UserProfile
+  , stuff :: UserData
+  } |]
 

@@ -25,6 +25,7 @@ import Data.Record.StateFields.Containers
 import Types.Core
 import Types.Database
 import Types.Entry
+import Types.Instances ()
 import Types.JSON ()
 import Types.Request
 import Types.Response
@@ -38,4 +39,17 @@ defaultSession = Session { _sessionUser = Nothing }
 
 emptyDatabase :: Database
 emptyDatabase = Database { _dbUsers = M.empty }
+
+emptyUser :: Id -> String -> String -> User
+emptyUser id name password = User
+  { _uId = id
+  , _uPassword = password
+  , _uProfile = UserProfile
+    { _upName = name
+    }
+  , _uStuff = UserData
+    { _udTags = M.empty
+    , _udEntries = M.empty
+    }
+  }
 

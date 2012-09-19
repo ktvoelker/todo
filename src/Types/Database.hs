@@ -10,5 +10,5 @@ import Types.User
 
 record "db" [d| newtype Database = Database {
     users :: M.Map Id User
-  } deriving (Eq, Ord, Read, Show) |]
+  } |]
 

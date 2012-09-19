@@ -6,6 +6,7 @@ import Data.Time.Clock
 import Types.Core
 
 data Request =
+  ReqCurUser |
   ReqLogIn
   { reqUser :: String
   , reqPassword :: String

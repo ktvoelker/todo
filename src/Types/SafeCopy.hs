@@ -2,7 +2,6 @@
 module Types.SafeCopy where
 
 import Data.SafeCopy
-import Data.Typeable
 
 import Types.Core
 import Types.Entry
@@ -19,13 +18,11 @@ deriveSafeCopy 1 'base ''Tag
 
 deriveSafeCopy 1 'base ''User
 
+deriveSafeCopy 1 'base ''UserData
+
+deriveSafeCopy 1 'base ''UserProfile
+
 deriveSafeCopy 1 'base ''Database
 
 deriveSafeCopy 1 'base ''Error
-
-deriving instance Typeable Database
-
-deriving instance Typeable User
-
-deriving instance Typeable Error
 

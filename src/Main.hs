@@ -23,11 +23,20 @@ options = defaultOptions
 
 app :: AcidState Database -> Application
 app db = vorpleIO options db defaultSession $ \req -> case req of
+  ReqCurUser -> do
+    uId <- getf sessionUser
+    case uId of
+      Just uId -> do
+        user <- ask >>= liftIO . flip query (GetUserProfile uId)
+        case user of
+          Just user -> return $ RespUserProfile uId user
+          Nothing -> return $ RespError ENotFound ""
+      _ -> return RespEmpty
   ReqLogIn{..} -> do
     user <- ask >>= liftIO . flip query (FindUser reqUser)
     case user of
       Just User{..} | _uPassword == reqPassword -> do
-        putf sessionUser $ Just _uId
+        putf sessionUser . Just $ _uId
         return RespEmpty
       _ -> return $ RespError EBadLogin ""
   ReqRegister{..} ->
@@ -38,7 +47,7 @@ app db = vorpleIO options db defaultSession $ \req -> case req of
       case result of
         Left err -> return $ RespError err ""
         Right uId -> do
-          putf sessionUser (Just uId)
+          putf sessionUser . Just $ uId
           return RespEmpty
   ReqCreateEntry{..} -> ni
   ReqUpdateEntry{..} -> ni

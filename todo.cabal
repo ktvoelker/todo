@@ -34,7 +34,7 @@ Executable todo
     warp >= 1.3 && < 1.4,
     wai >= 1.3 && < 1.4,
     wai-app-static >= 1.3 && < 1.4,
-    state-record >= 0.0.1.6 && < 0.1,
+    state-record >= 0.1.0.1 && < 0.2,
     vorple >= 0.1.0.1 && < 0.2
   default-extensions:
     DeriveDataTypeable

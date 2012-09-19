@@ -4,9 +4,8 @@ module Event where
 import Data.Acid
 
 import Query
-import Types.Database
-import Types.SafeCopy ()
+import Types
 import Update
 
-makeAcidic ''Database ['findUser, 'register]
+makeAcidic ''Database ['findUser, 'getUserProfile, 'register]
 
