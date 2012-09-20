@@ -1,5 +1,15 @@
 
-#Auth {
+.Page {
   display: none;
+}
+
+#Top {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+}
+
+#Top > li {
+  list-style-type: none;
 }
 

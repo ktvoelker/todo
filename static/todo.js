@@ -39,9 +39,10 @@ function getCurUser() {
     if (r.RespUserProfile) {
       userId = r.RespUserProfile[0];
       user = r.RespUserProfile[1];
-      auth.dialog("close");
+      $("#Name").text(user.Name);
+      $("#Main").pages("go");
     } else {
-      auth.dialog("open");
+      $("#Auth").pages("go");
     }
   });
 }
@@ -53,13 +54,8 @@ $(document).ready(function() {
     csrfKey = r.Key;
     getCurUser();
   });
-  auth = $("#Auth").dialog({
-    autoOpen: false,
-    closeOnEscape: false,
-    modal: true,
-    resizable: false,
-    title: "Log In"
-  });
+  $("body > .Page").pages("setup");
+  $("#Pages > .Page").pages("setup");
   $(F.Login).submit(function() {
     send({"ReqLogIn": {
       "User": F.Login.User.value,

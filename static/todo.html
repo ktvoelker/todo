@@ -6,10 +6,11 @@
     <link href="todo.css" type="text/css" rel="stylesheet">
     <script src="jquery-1.8.0.min.js"></script>
     <script src="jquery-ui-1.8.23.custom.min.js"></script>
+    <script src="pages.js"></script>
     <script src="todo.js"></script>
   </head>
   <body>
-    <div id="Auth">
+    <div id="Auth" class="Page">
       <form name="Login">
         <input name="User">
         <input name="Password">
@@ -19,6 +20,16 @@
         <input name="Password">
         <input type="submit" value="Register">
       </form>
+    </div>
+    <div id="Main" class="Page">
+      <ul id="Top">
+        <li><a id="Name" href="javascript:myProfile()"></a></li>
+      </ul>
+      <div id="Pages">
+        <div class="Page" id="Entries">
+          TODO: Entries
+        </div>
+      </div>
     </div>
   </body>
 </html>
