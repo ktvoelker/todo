@@ -139,20 +139,26 @@ type P u a = Parsec [((String, SourcePos), Token)] u a
 tok :: (Token -> Maybe a) -> P u a
 tok = token (fst . fst) (snd . fst) . (. snd)
 
-applyLimit :: ParDate -> (Ordering, ParDate) -> ParDate
+applyLimit :: ParDate -> (Ordering, ParDate) -> Maybe ParDate
 applyLimit = undefined
 
 -- time ::= time-with-limit | limit
-time :: UTCTime -> P u ParDate
+time :: UTCTime -> P u (Maybe ParDate)
 time now =
   (liftM (applyLimit $ timeToParDate now) (limit now))
   <|>
   timeWithLimit now
 
 -- time-with-limit ::= (absolute-time | fuzzy-time | relative-time) limit?
-timeWithLimit :: UTCTime -> P u ParDate
+timeWithLimit :: UTCTime -> P u (Maybe ParDate)
 timeWithLimit now =
-  liftM2 applyLimit (absoluteTime <|> fuzzyTime now <|> relativeTime now) (limit now)
+  liftM2 applyLimit (timeNoLimit now) (limit now)
+
+timeNoLimit :: UTCTime -> P u ParDate
+timeNoLimit now =
+  fmap timeToParDate (fuzzyTime now <|> relativeTime now)
+  <|>
+  absoluteTime
 
 -- absolute-time ::= holiday | time-token*
 absoluteTime :: P u ParDate
@@ -165,22 +171,22 @@ processBasic :: [Basic] -> ParDate
 processBasic = undefined
 
 -- fuzzy-time ::= 'next' (time-unit | day-of-week)
-fuzzyTime :: UTCTime -> P u ParDate
+fuzzyTime :: UTCTime -> P u UTCTime
 fuzzyTime now = do
   tokEq TNext
   (liftM (nextUnit now) (tok isUnit)) <|> (liftM (nextDayOfWeek now) (tok isDayOfWeek))
 
-nextUnit :: UTCTime -> Unit -> ParDate
+nextUnit :: UTCTime -> Unit -> UTCTime
 nextUnit = undefined
 
-nextDayOfWeek :: UTCTime -> Int -> ParDate
+nextDayOfWeek :: UTCTime -> Int -> UTCTime
 nextDayOfWeek = undefined
 
 -- relative-time ::= 'in'? duration+
-relativeTime :: UTCTime -> P u ParDate
+relativeTime :: UTCTime -> P u UTCTime
 relativeTime now = do
   tokEq TIn
-  liftM (timeToParDate . foldr (uncurry addDuration) now) (many1 duration)
+  liftM (foldr (uncurry addDuration) now) (many1 duration)
 
 -- duration ::= coefficient time-unit
 duration :: P u (Int, Unit)
@@ -188,9 +194,9 @@ duration = liftM2 (,) coefficient (tok isUnit)
 
 -- coefficient ::= digit-word | NAT
 coefficient :: P u Int
-coefficient = tok isDigitWord <|> tok isNat
+coefficient = tok isDigitWord <|> try (tok isNat)
 
 -- limit ::= ('before' | 'after') time
 limit :: UTCTime -> P u (Ordering, ParDate)
-limit now = liftM2 (,) (tok isRel) (time now)
+limit now = liftM2 (,) (tok isRel) (timeNoLimit now)
 
