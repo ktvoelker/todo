@@ -32,8 +32,26 @@ import Text.Parsec.Pos
  - Other numbers: prefer day of month
  -}
 
+parDateToTime :: ParDate -> Maybe UTCTime
+parDateToTime ParDate{..} =
+  case (dayOfWeek, pdDayOfWeek) of
+    (Nothing, _) -> Nothing
+    (_, Nothing) -> u
+    (Just act, Just exp) | act == exp -> u
+    _ -> Nothing
+  where
+    day = liftM3 fromGregorian (fmap fromIntegral pdYear) pdMonth pdDayOfMonth
+    dayOfWeek = fmap ((\(_, _, x) -> x) . toWeekDate) day
+    u = fmap (flip UTCTime 0) day
+
 parseTime :: String -> UTCTime -> Maybe UTCTime
-parseTime = undefined
+parseTime xs now =
+    (>>= parDateToTime)
+  . join
+  . either (const Nothing) Just
+  . runParser (time now) () ""
+  . tokenize
+  $ xs
 
 data ParDate =
   ParDate
@@ -250,7 +268,8 @@ tok :: (Token -> Maybe a) -> P u a
 tok = token (fst . fst) (snd . fst) . (. snd)
 
 applyLimit :: ParDate -> (Ordering, ParDate) -> Maybe ParDate
-applyLimit = undefined
+-- TODO
+applyLimit = const . Just
 
 -- time ::= time-with-limit | limit
 time :: UTCTime -> P u (Maybe ParDate)
@@ -278,7 +297,8 @@ absoluteTime =
   (liftM processBasic (many1 $ tok basicToken))
 
 processBasic :: [Basic] -> ParDate
-processBasic = undefined
+-- TODO
+processBasic _ = ParDate Nothing Nothing Nothing Nothing
 
 -- fuzzy-time ::= 'next' (time-unit | day-of-week)
 fuzzyTime :: UTCTime -> P u UTCTime
@@ -287,7 +307,15 @@ fuzzyTime now = do
   (liftM (nextUnit now) (tok isUnit)) <|> (liftM (nextDayOfWeek now) (tok isDayOfWeek))
 
 nextUnit :: UTCTime -> Unit -> UTCTime
-nextUnit = undefined
+nextUnit u Week = nextDayOfWeek u 2
+nextUnit u Year = UTCTime (fromGregorian (year + 1) 1 1) 0
+  where
+    (year, _, _) = toGregorian . utctDay $ u
+nextUnit u Month =
+  UTCTime (addGregorianMonthsRollOver 1 $ fromGregorian year month 1) 0
+  where
+    (year, month, _) = toGregorian . utctDay $ u
+nextUnit u Day = UTCTime (addDays 1 $ utctDay u) 0
 
 nextDayOfWeek :: UTCTime -> Int -> UTCTime
 nextDayOfWeek fromTime toDOW =
@@ -295,7 +323,7 @@ nextDayOfWeek fromTime toDOW =
   where
     fromDay = utctDay fromTime
     (_, _, fromDOW) = toWeekDate fromDay
-    diffDays = if toDOW < fromDOW then 7 - fromDOW + toDOW else toDOW - fromDOW
+    diffDays = if toDOW <= fromDOW then 7 - fromDOW + toDOW else toDOW - fromDOW
 
 -- relative-time ::= 'in'? duration+
 relativeTime :: UTCTime -> P u UTCTime
