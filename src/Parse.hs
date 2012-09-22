@@ -2,10 +2,13 @@
 module Parse where
 
 import Control.Monad
+import Data.Char
+import Data.List.Split
 import Data.Time.Calendar
 import Data.Time.Calendar.WeekDate
 import Data.Time.Clock
 import Text.Parsec
+import Text.Parsec.Pos
 
 {--
  - Productions based on big word lists: holiday, time-unit, day-of-week, month-name
@@ -28,7 +31,7 @@ import Text.Parsec
  -}
 
 parseTime :: String -> UTCTime -> Maybe UTCTime
-parseTime _ now = Just now
+parseTime = undefined
 
 data ParDate =
   ParDate
@@ -131,8 +134,17 @@ isRel :: Token -> Maybe Ordering
 isRel (TRel o) = Just o
 isRel _ = Nothing
 
+splitTokens :: String -> [(String, SourcePos)]
+splitTokens =
+  map (\xs -> (map snd xs, newPos "" 1 . fst . head $ xs))
+  . split (dropBlanks . condense . whenElt $ not . isAlphaNum . snd)
+  . zip [1 ..]
+
 tokenize :: String -> [((String, SourcePos), Token)]
-tokenize = undefined
+tokenize = map (\t -> (t, parseToken . fst $ t)) . splitTokens
+
+parseToken :: String -> Token
+parseToken = undefined
 
 type P u a = Parsec [((String, SourcePos), Token)] u a
 
@@ -180,7 +192,12 @@ nextUnit :: UTCTime -> Unit -> UTCTime
 nextUnit = undefined
 
 nextDayOfWeek :: UTCTime -> Int -> UTCTime
-nextDayOfWeek = undefined
+nextDayOfWeek fromTime toDOW =
+  UTCTime (addDays (fromIntegral diffDays) fromDay) (utctDayTime fromTime)
+  where
+    fromDay = utctDay fromTime
+    (_, _, fromDOW) = toWeekDate fromDay
+    diffDays = if toDOW < fromDOW then 7 - fromDOW + toDOW else toDOW - fromDOW
 
 -- relative-time ::= 'in'? duration+
 relativeTime :: UTCTime -> P u UTCTime
