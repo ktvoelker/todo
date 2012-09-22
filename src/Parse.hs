@@ -2,6 +2,8 @@
 module Parse where
 
 import Control.Monad
+import Data.Time.Calendar
+import Data.Time.Calendar.WeekDate
 import Data.Time.Clock
 import Text.Parsec
 
@@ -37,17 +39,43 @@ data ParDate =
   } deriving (Eq, Ord, Show)
 
 timeToParDate :: UTCTime -> ParDate
-timeToParDate = undefined
+timeToParDate u =
+  ParDate
+  { pdYear = Just . fromInteger $ year
+  , pdMonth = Just month
+  , pdDayOfMonth = Just dayOfMonth
+  , pdDayOfWeek = Just dayOfWeek
+  }
+  where
+    day = utctDay u
+    (year, month, dayOfMonth) = toGregorian day
+    (_, _, dayOfWeek) = toWeekDate day
 
-parDateToTime :: UTCTime -> ParDate -> ParDate
-parDateToTime _ = undefined
+mergeParDates :: ParDate -> ParDate -> ParDate
+mergeParDates a b =
+  ParDate
+  { pdYear = pdYear a `mplus` pdYear b
+  , pdMonth = pdMonth a `mplus` pdMonth b
+  , pdDayOfMonth = pdDayOfMonth a `mplus` pdDayOfMonth b
+  , pdDayOfWeek = pdDayOfWeek a `mplus` pdDayOfWeek b
+  }
 
+ite :: Bool -> a -> a -> a
 ite b t f = if b then t else f
 
+tokEq :: Token -> P u ()
 tokEq a = tok (\b -> if a == b then Just () else Nothing)
 
-addDuration :: Int -> Unit -> ParDate -> ParDate
-addDuration = undefined
+addDuration :: Int -> Unit -> UTCTime -> UTCTime
+addDuration n u t = UTCTime day' $ utctDayTime t
+  where
+    n' = fromIntegral n
+    day = utctDay t
+    day' = case u of
+      Year -> addGregorianYearsRollOver n' day
+      Month -> addGregorianMonthsRollOver n' day
+      Week -> addDays (7 * n') day
+      Day -> addDays n' day
 
 data Unit = Year | Month | Week | Day deriving (Eq, Ord, Enum, Bounded, Show)
 
@@ -112,19 +140,22 @@ tok :: (Token -> Maybe a) -> P u a
 tok = token (fst . fst) (snd . fst) . (. snd)
 
 applyLimit :: ParDate -> (Ordering, ParDate) -> ParDate
-applyLimit _ = undefined
+applyLimit = undefined
 
 -- time ::= time-with-limit | limit
+time :: UTCTime -> P u ParDate
 time now =
-  (liftM (applyLimit now) (limit now))
+  (liftM (applyLimit $ timeToParDate now) (limit now))
   <|>
   timeWithLimit now
 
 -- time-with-limit ::= (absolute-time | fuzzy-time | relative-time) limit?
+timeWithLimit :: UTCTime -> P u ParDate
 timeWithLimit now =
   liftM2 applyLimit (absoluteTime <|> fuzzyTime now <|> relativeTime now) (limit now)
 
 -- absolute-time ::= holiday | time-token*
+absoluteTime :: P u ParDate
 absoluteTime =
   (liftM timeToParDate (tok isHoliday))
   <|>
@@ -134,27 +165,32 @@ processBasic :: [Basic] -> ParDate
 processBasic = undefined
 
 -- fuzzy-time ::= 'next' (time-unit | day-of-week)
+fuzzyTime :: UTCTime -> P u ParDate
 fuzzyTime now = do
   tokEq TNext
   (liftM (nextUnit now) (tok isUnit)) <|> (liftM (nextDayOfWeek now) (tok isDayOfWeek))
 
-nextUnit :: ParDate -> Unit -> ParDate
+nextUnit :: UTCTime -> Unit -> ParDate
 nextUnit = undefined
 
-nextDayOfWeek :: ParDate -> Int -> ParDate
+nextDayOfWeek :: UTCTime -> Int -> ParDate
 nextDayOfWeek = undefined
 
 -- relative-time ::= 'in'? duration+
+relativeTime :: UTCTime -> P u ParDate
 relativeTime now = do
   tokEq TIn
-  liftM (foldr (uncurry addDuration) now) (many1 duration)
+  liftM (timeToParDate . foldr (uncurry addDuration) now) (many1 duration)
 
 -- duration ::= coefficient time-unit
+duration :: P u (Int, Unit)
 duration = liftM2 (,) coefficient (tok isUnit)
 
 -- coefficient ::= digit-word | NAT
+coefficient :: P u Int
 coefficient = tok isDigitWord <|> tok isNat
 
 -- limit ::= ('before' | 'after') time
+limit :: UTCTime -> P u (Ordering, ParDate)
 limit now = liftM2 (,) (tok isRel) (time now)
 
