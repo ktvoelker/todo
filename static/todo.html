@@ -10,24 +10,40 @@
     <script src="todo.js"></script>
   </head>
   <body>
-    <div id="Auth" class="Page">
-      <form name="Login">
-        <input name="User">
-        <input name="Password">
+    <div id="auth" class="page">
+      <form name="login">
+        <input name="user">
+        <input name="password">
         <input type="submit" value="Log In">
       </form>
-      <form name="Register">
-        <input name="Password">
-        <input type="submit" value="Register">
+      <form name="register">
+        <input name="password">
+        <input type="submit" value="register">
       </form>
     </div>
-    <div id="Main" class="Page">
-      <ul id="Top">
-        <li><a id="Name" href="javascript:myProfile()"></a></li>
+    <div id="main" class="page">
+      <ul id="top">
+        <li><a id="name" href="javascript:myProfile()"></a></li>
       </ul>
-      <div id="Pages">
-        <div class="Page" id="Entries">
+      <div id="pages">
+        <div class="page" id="entries">
           TODO: Entries
+
+          The idea is to have a table with a bunch of rows, one per task.
+
+          There are always inputs at the top to add a new input (not focused by
+          default).
+
+          When you add an item, focus goes back to the first input, and the item added
+          shifts down a bit. It stays near the top until it's been saved on the server,
+          and then shifts down to its proper place in the sort.
+
+            This last bit requires an addition to the protocol. When adding an item,
+            we need to find out where it would appear according to the current filter.
+
+            If the item would be filtered out, show it animating off to the side.
+          <input id="time">
+          <p id="parsed-time"></p>
         </div>
       </div>
     </div>

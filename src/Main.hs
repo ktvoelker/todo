@@ -10,6 +10,7 @@ import Web.Vorple
 import qualified Network.Wai.Handler.Warp as Warp
 
 import Event
+import Parse
 import Types
 
 ni :: (Monad m) => m Response
@@ -53,7 +54,9 @@ app db = vorpleIO options db defaultSession $ \req -> case req of
   ReqUpdateEntry{..} -> ni
   ReqGetTags{..} -> ni
   ReqGetEntries{..} -> ni
-  ReqParseTime{..} -> ni
+  ReqParseTime{..} ->
+    liftIO getCurrentTime
+    >>= return . maybe (RespError EBadInput "") RespTime . (parseTime reqInput)
   ReqAddExternal{..} -> ni
 
 main :: IO ()

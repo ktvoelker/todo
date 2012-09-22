@@ -15,6 +15,7 @@ data Error =
   | EInvalidPassword
   | EForbidden
   | ENotFound
+  | EBadInput
   deriving (Eq, Ord, Read, Show)
 
 data Response =

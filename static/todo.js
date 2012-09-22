@@ -39,10 +39,10 @@ function getCurUser() {
     if (r.RespUserProfile) {
       userId = r.RespUserProfile[0];
       user = r.RespUserProfile[1];
-      $("#Name").text(user.Name);
-      $("#Main").pages("go");
+      $("#name").text(user.Name);
+      $("#main").pages("go");
     } else {
-      $("#Auth").pages("go");
+      $("#auth").pages("go");
     }
   });
 }
@@ -54,21 +54,30 @@ $(document).ready(function() {
     csrfKey = r.Key;
     getCurUser();
   });
-  $("body > .Page").pages("setup");
-  $("#Pages > .Page").pages("setup");
+  $("body > .page").pages("setup");
+  $("#pages > .page").pages("setup");
+  $("#entries").pages("go");
   $(F.Login).submit(function() {
     send({"ReqLogIn": {
       "User": F.Login.User.value,
       "Password": F.Login.Password.value}}, getCurUser);
     return false;
   });
-  $(F.Register).submit(function() {
-    if (F.Login.Password.value == F.Register.Password.value) {
+  $(F.register).submit(function() {
+    if (F.login.password.value == F.register.password.value) {
       send({"ReqRegister": {
-        "User": F.Login.User.value,
-        "Password": F.Login.Password.value}}, getCurUser);
+        "User": F.login.user.value,
+        "Password": F.login.password.value}}, getCurUser);
     }
     return false;
+  });
+  $("#time").keyup(function() {
+    send({"ReqParseTime": {"Input": $("#time").val()}},
+      function(r) {
+        if (r.RespTime) {
+          $("#parsed-time").text(r.RespTime);
+        }
+      })
   });
 });
 
