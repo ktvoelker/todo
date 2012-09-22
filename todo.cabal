@@ -46,5 +46,6 @@ Executable todo
     RecordWildCards
     StandaloneDeriving
     TemplateHaskell
+    TupleSections
     TypeFamilies
 

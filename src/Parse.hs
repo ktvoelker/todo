@@ -3,7 +3,9 @@ module Parse where
 
 import Control.Monad
 import Data.Char
+import Data.List
 import Data.List.Split
+import Data.Maybe
 import Data.Time.Calendar
 import Data.Time.Calendar.WeekDate
 import Data.Time.Clock
@@ -84,7 +86,7 @@ data Unit = Year | Month | Week | Day deriving (Eq, Ord, Enum, Bounded, Show)
 
 data Token =
     TNat Int
-  | THoliday UTCTime
+  | THoliday ParDate
   | TDayOfWeek Int
   | TMonthName Int
   | TDigitWord Int
@@ -110,7 +112,7 @@ basicToken (TDayOfWeek n) = Just $ BDayOfWeek n
 basicToken (TMonthName n) = Just $ BMonthName n
 basicToken _ = Nothing
 
-isHoliday :: Token -> Maybe UTCTime
+isHoliday :: Token -> Maybe ParDate
 isHoliday (THoliday t) = Just t
 isHoliday _ = Nothing
 
@@ -141,10 +143,106 @@ splitTokens =
   . zip [1 ..]
 
 tokenize :: String -> [((String, SourcePos), Token)]
-tokenize = map (\t -> (t, parseToken . fst $ t)) . splitTokens
+tokenize =
+  catMaybes
+  . map (\t -> fmap (t, ) . parseToken . map toLower . fst $ t)
+  . splitTokens
 
-parseToken :: String -> Token
-parseToken = undefined
+holidays :: [(String, ParDate)]
+holidays =
+  [ ( "christmas", ParDate Nothing (Just 12) (Just 25) Nothing )
+  , ( "xmas", ParDate Nothing (Just 12) (Just 25) Nothing )
+  ]
+
+weekDays :: [(String, Int)]
+weekDays =
+  [ ( "su", 1 )
+  , ( "mon", 2 )
+  , ( "tu", 3 )
+  , ( "wed", 4 )
+  , ( "th", 5 )
+  , ( "fr", 6 )
+  , ( "sa", 7 )
+  ]
+
+unitNames :: [(String, Unit)]
+unitNames =
+  [ ( "y", Year )
+  , ( "m", Month )
+  , ( "month", Month )
+  , ( "w", Week)
+  , ( "wk", Week)
+  , ( "week", Week )
+  , ( "d", Day )
+  ]
+
+monthNames :: [(String, Int)]
+monthNames =
+  [ ( "ja", 1 )
+  , ( "fe", 2 )
+  , ( "mar", 3 )
+  , ( "ap", 4 )
+  , ( "may", 5 )
+  , ( "jun", 6 )
+  , ( "jul", 7 )
+  , ( "au", 8 )
+  , ( "se", 9 )
+  , ( "o", 10 )
+  , ( "n", 11 )
+  , ( "de", 12 )
+  ]
+
+digitNames :: [(String, Int)]
+digitNames =
+  [ ( "one", 1 )
+  , ( "two", 2 )
+  , ( "three", 3 )
+  , ( "four", 4 )
+  , ( "five", 5 )
+  , ( "six", 6 )
+  , ( "seven", 7 )
+  , ( "eight", 8 )
+  , ( "nine", 9 )
+  , ( "ten", 10 )
+  , ( "eleven", 11 )
+  , ( "twelve", 12 )
+  ]
+
+mapSnd :: (b -> c) -> (a, b) -> (a, c)
+mapSnd f (a, b) = (a, f b)
+
+fixedWordTokens :: [(String, Token)]
+fixedWordTokens =
+  [ ( "bef", TRel LT )
+  , ( "aft", TRel GT )
+  , ( "next", TNext )
+  , ( "in", TIn )
+  ]
+
+wordTokens :: [(String, Token)]
+wordTokens =
+     fixedWordTokens
+  ++ map (mapSnd THoliday) holidays
+  ++ map (mapSnd TDayOfWeek) weekDays
+  ++ map (mapSnd TUnit) unitNames
+  ++ map (mapSnd TMonthName) monthNames
+  ++ map (mapSnd TDigitWord) digitNames
+
+parseToken :: String -> Maybe Token
+parseToken xs = msum [numMatch, wordMatch]
+  where
+    numMatch =
+      fmap (TNat . fst)
+      . listToMaybe
+      . reads
+      $ xs
+    wordMatch =
+      listToMaybe
+      . map snd
+      . sortBy (\a b -> compare (l a) (l b))
+      . filter ((`isPrefixOf` xs) . fst)
+      $ wordTokens
+    l = length . fst
 
 type P u a = Parsec [((String, SourcePos), Token)] u a
 
@@ -172,10 +270,10 @@ timeNoLimit now =
   <|>
   absoluteTime
 
--- absolute-time ::= holiday | time-token*
+-- absolute-time ::= time-token*
 absoluteTime :: P u ParDate
 absoluteTime =
-  (liftM timeToParDate (tok isHoliday))
+  tok isHoliday
   <|>
   (liftM processBasic (many1 $ tok basicToken))
 
