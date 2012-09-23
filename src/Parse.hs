@@ -44,6 +44,9 @@ parDateToTime ParDate{..} =
     dayOfWeek = fmap ((\(_, _, x) -> x) . toWeekDate) day
     u = fmap (flip UTCTime 0) day
 
+parseTimeNow :: String -> IO (Maybe UTCTime)
+parseTimeNow xs = liftM (parseTime xs) getCurrentTime
+
 parseTime :: String -> UTCTime -> Maybe UTCTime
 parseTime xs now =
     (>>= parDateToTime)
@@ -58,6 +61,8 @@ p m = runParser m () "" . tokenize
 pd m = fmap utctDay . p m
 
 pdm m = fmap (fmap utctDay) . p m
+
+now = getCurrentTime
 
 data ParDate =
   ParDate
@@ -294,18 +299,36 @@ timeNoLimit :: UTCTime -> P u ParDate
 timeNoLimit now =
   fmap timeToParDate (fuzzyTime now <|> relativeTime now)
   <|>
-  absoluteTime
+  absoluteTime now
 
 -- absolute-time ::= time-token*
-absoluteTime :: P u ParDate
-absoluteTime =
-  tok isHoliday
-  <|>
-  (liftM processBasic (many1 $ tok basicToken))
+absoluteTime :: UTCTime -> P u ParDate
+absoluteTime now = tok isHoliday <|> basic now
 
-processBasic :: [Basic] -> ParDate
--- TODO
-processBasic _ = ParDate Nothing Nothing Nothing Nothing
+basic :: UTCTime -> P u ParDate
+basic now = do
+  pd <- liftM processBasic . many1 . tok $ basicToken
+  case pd of
+    Nothing -> mzero
+    Just (ParDate Nothing Nothing Nothing (Just dow)) ->
+      return . timeToParDate . nextDayOfWeek now $ dow
+    Just pd -> return pd
+
+processBasic :: [Basic] -> Maybe ParDate
+processBasic = foldr f . Just $ ParDate Nothing Nothing Nothing Nothing
+  where
+    chk field rec = maybe (Just rec) (const Nothing) field
+    f _ Nothing = Nothing
+    f tok (Just pd@ParDate{..}) = case tok of
+      BMonthName n -> chk pdMonth $ pd { pdMonth = Just n }
+      BDayOfWeek n -> chk pdDayOfWeek $ pd { pdDayOfWeek = Just n }
+      BNat n -> case (pdYear, pdMonth, pdDayOfMonth) of
+        _ | n > 31 -> chk pdYear $ pd { pdYear = Just n }
+        (Nothing, _, Nothing) -> chk pdDayOfMonth $ pd { pdDayOfMonth = Just n }
+        (Nothing, Nothing, Just _) -> chk pdMonth $ pd { pdMonth = Just n }
+        (Just _, Nothing, _) -> chk pdMonth $ pd { pdMonth = Just n }
+        (Just _, Just _, Nothing) -> chk pdDayOfMonth $ pd { pdDayOfMonth = Just n }
+        _ -> chk pdYear $ pd { pdYear = Just n }
 
 -- fuzzy-time ::= 'next' (time-unit | day-of-week)
 fuzzyTime :: UTCTime -> P u UTCTime
