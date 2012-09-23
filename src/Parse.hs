@@ -53,6 +53,12 @@ parseTime xs now =
   . tokenize
   $ xs
 
+p m = runParser m () "" . tokenize
+
+pd m = fmap utctDay . p m
+
+pdm m = fmap (fmap utctDay) . p m
+
 data ParDate =
   ParDate
   { pdYear :: Maybe Int
@@ -257,7 +263,7 @@ parseToken xs = msum [numMatch, wordMatch]
     wordMatch =
       listToMaybe
       . map snd
-      . sortBy (\a b -> compare (l a) (l b))
+      . sortBy (\a b -> compare (l b) (l a))
       . filter ((`isPrefixOf` xs) . fst)
       $ wordTokens
     l = length . fst
