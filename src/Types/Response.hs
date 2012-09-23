@@ -22,6 +22,7 @@ data Response =
   RespEmpty |
   RespEntry Entry |
   RespEntries [Entry] |
+  RespPosition Int |
   RespTags [Tag] |
   RespTime UTCTime |
   RespUrl String |

@@ -5,6 +5,14 @@ import Data.Time.Clock
 
 import Types.Core
 
+data EntryFilter =
+  EntryFilter
+  { efSearch :: Maybe String
+  , efTags :: [Id]
+  , efDueBefore :: Maybe (UTCTime)
+  , efDueAfter :: Maybe (UTCTime)
+  } deriving (Eq, Ord, Read, Show)
+
 data Request =
   ReqCurUser |
   ReqLogIn
@@ -20,6 +28,7 @@ data Request =
   , reqTags :: [Id]
   , reqDue :: Maybe UTCTime
   , reqDepends :: [Id]
+  , reqFilter :: EntryFilter
   } |
   ReqUpdateEntry
   { reqSetTitle :: Maybe String
@@ -28,19 +37,14 @@ data Request =
   , reqSetDue :: Maybe (Maybe UTCTime)
   , reqAddDepends :: [Id]
   , reqDelDepends :: [Id]
+  , reqFilter :: EntryFilter
   } |
   ReqGetTags
   { reqIsMood :: Maybe Bool
   , reqSearch :: Maybe String
   } |
   ReqGetEntries
-  { reqSearch :: Maybe String
-  , reqTags :: [Id]
-  , reqDueBefore :: Maybe (UTCTime)
-  , reqDueAfter :: Maybe (UTCTime)
-  } |
-  ReqParseTime
-  { reqInput :: String
+  { reqFilter :: EntryFilter
   } |
   ReqAddExternal
   { reqEntry :: Id

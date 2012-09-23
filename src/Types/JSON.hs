@@ -12,6 +12,8 @@ import Types.User
 
 deriveJSON (drop 2) ''Entry
 
+deriveJSON (drop 2) ''EntryFilter
+
 deriveJSON (drop 3) ''Request
 
 deriveJSON id ''Error

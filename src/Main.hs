@@ -5,12 +5,12 @@ import Data.String
 import Network.Wai (Application, pathInfo)
 import Network.Wai.Application.Static
 import System.Environment
-import Web.Vorple
 
 import qualified Network.Wai.Handler.Warp as Warp
 
-import Event
-import Parse
+import Handler.CurUser
+import Handler.LogIn
+import Handler.Register
 import Types
 
 ni :: (Monad m) => m Response
@@ -24,39 +24,13 @@ options = defaultOptions
 
 app :: AcidState Database -> Application
 app db = vorpleIO options db defaultSession $ \req -> case req of
-  ReqCurUser -> do
-    uId <- getf sessionUser
-    case uId of
-      Just uId -> do
-        user <- ask >>= liftIO . flip query (GetUserProfile uId)
-        case user of
-          Just user -> return $ RespUserProfile uId user
-          Nothing -> return $ RespError ENotFound ""
-      _ -> return RespEmpty
-  ReqLogIn{..} -> do
-    user <- ask >>= liftIO . flip query (FindUser reqUser)
-    case user of
-      Just User{..} | _uPassword == reqPassword -> do
-        putf sessionUser . Just $ _uId
-        return RespEmpty
-      _ -> return $ RespError EBadLogin ""
-  ReqRegister{..} ->
-    if null reqPassword
-    then return $ RespError EInvalidPassword ""
-    else do
-      result <- ask >>= liftIO . flip update (Register reqUser reqPassword)
-      case result of
-        Left err -> return $ RespError err ""
-        Right uId -> do
-          putf sessionUser . Just $ uId
-          return RespEmpty
+  ReqCurUser -> handleCurUser
+  ReqLogIn{..} -> handleLogIn reqUser reqPassword
+  ReqRegister{..} -> handleRegister reqUser reqPassword
   ReqCreateEntry{..} -> ni
   ReqUpdateEntry{..} -> ni
   ReqGetTags{..} -> ni
   ReqGetEntries{..} -> ni
-  ReqParseTime{..} ->
-    liftIO getCurrentTime
-    >>= return . maybe (RespError EBadInput "") RespTime . (parseTime reqInput)
   ReqAddExternal{..} -> ni
 
 main :: IO ()

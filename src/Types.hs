@@ -4,6 +4,7 @@ module Types (
   , module Data.Time.Clock
   , module Data.Record.StateFields
   , module Data.Record.StateFields.Containers
+  , module Web.Vorple
   , module Types
   , module Types.Core
   , module Types.Database
@@ -21,6 +22,7 @@ import Data.Acid
 import Data.Time.Clock
 import Data.Record.StateFields
 import Data.Record.StateFields.Containers
+import Web.Vorple
 
 import Types.Core
 import Types.Database
@@ -33,6 +35,8 @@ import Types.SafeCopy ()
 import Types.Session
 import Types.Tag
 import Types.User
+
+type Handler = Vorple (AcidState Database) Session IO Response
 
 defaultSession :: Session
 defaultSession = Session { _sessionUser = Nothing }
