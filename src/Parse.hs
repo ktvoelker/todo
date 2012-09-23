@@ -112,7 +112,7 @@ data Token =
   | TRel Ordering
   | TNext
   | TIn
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 data Basic =
     BNat Int
@@ -174,13 +174,13 @@ holidays =
 
 weekDays :: [(String, Int)]
 weekDays =
-  [ ( "su", 1 )
-  , ( "mon", 2 )
-  , ( "tu", 3 )
-  , ( "wed", 4 )
-  , ( "th", 5 )
-  , ( "fr", 6 )
-  , ( "sa", 7 )
+  [ ( "su", 7 )
+  , ( "mon", 1 )
+  , ( "tu", 2 )
+  , ( "wed", 3 )
+  , ( "th", 4 )
+  , ( "fr", 5 )
+  , ( "sa", 6 )
   ]
 
 unitNames :: [(String, Unit)]
@@ -280,8 +280,9 @@ time now =
 
 -- time-with-limit ::= (absolute-time | fuzzy-time | relative-time) limit?
 timeWithLimit :: UTCTime -> P u (Maybe ParDate)
-timeWithLimit now =
-  liftM2 applyLimit (timeNoLimit now) (limit now)
+timeWithLimit now = do
+  pd <- timeNoLimit now
+  liftM (maybe (Just pd) (applyLimit pd)) (optionMaybe $ limit now)
 
 timeNoLimit :: UTCTime -> P u ParDate
 timeNoLimit now =
@@ -307,7 +308,7 @@ fuzzyTime now = do
   (liftM (nextUnit now) (tok isUnit)) <|> (liftM (nextDayOfWeek now) (tok isDayOfWeek))
 
 nextUnit :: UTCTime -> Unit -> UTCTime
-nextUnit u Week = nextDayOfWeek u 2
+nextUnit u Week = nextDayOfWeek u 1
 nextUnit u Year = UTCTime (fromGregorian (year + 1) 1 1) 0
   where
     (year, _, _) = toGregorian . utctDay $ u
