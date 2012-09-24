@@ -11,6 +11,7 @@ import qualified Network.Wai.Handler.Warp as Warp
 import Handler.CurUser
 import Handler.LogIn
 import Handler.Register
+import Handler.Entry
 import Types
 
 ni :: (Monad m) => m Response
@@ -27,10 +28,10 @@ app db = vorpleIO options db defaultSession $ \req -> case req of
   ReqCurUser -> handleCurUser
   ReqLogIn{..} -> handleLogIn reqUser reqPassword
   ReqRegister{..} -> handleRegister reqUser reqPassword
-  ReqCreateEntry{..} -> ni
-  ReqUpdateEntry{..} -> ni
+  ReqCreateEntry{} -> handleCreateEntry req
+  ReqUpdateEntry{} -> handleUpdateEntry req
   ReqGetTags{..} -> ni
-  ReqGetEntries{..} -> ni
+  ReqGetEntries{} -> handleGetEntries req
   ReqAddExternal{..} -> ni
 
 main :: IO ()

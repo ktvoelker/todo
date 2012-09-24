@@ -26,3 +26,7 @@ getUserProfile id = askf f''
     f'' :: IdField Database (Maybe UserProfile)
     f'' = f' // g
 
+getEntries :: Request -> Query Database [Entry]
+getEntries ReqGetEntries{..} = undefined
+getEntries _ = return []
+

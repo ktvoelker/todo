@@ -11,6 +11,8 @@ data EntryFilter =
   , efTags :: [Id]
   , efDueBefore :: Maybe (UTCTime)
   , efDueAfter :: Maybe (UTCTime)
+  , efMaxCount :: Int
+  , efSkipCount :: Int
   } deriving (Eq, Ord, Read, Show)
 
 data Request =

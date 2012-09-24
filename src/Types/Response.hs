@@ -22,7 +22,10 @@ data Response =
   RespEmpty |
   RespEntry Entry |
   RespEntries [Entry] |
-  RespPosition Int |
+  RespEntryPos
+  { respEntry :: Id
+  , respPos :: Int
+  } |
   RespTags [Tag] |
   RespTime UTCTime |
   RespUrl String |

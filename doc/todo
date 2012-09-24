@@ -2,3 +2,5 @@
 TODO
 ====
 
+Use GADTs to simulate subtyping among request types
+

@@ -20,3 +20,11 @@ register name password = do
       modf dbUsers $ M.insert uId user
       return $ Right uId
 
+createEntry :: Request -> Update Database (Either Error Id)
+createEntry ReqCreateEntry{..} = undefined
+createEntry _ = return $ Left EBadInput
+
+updateEntry :: Request -> Update Database (Maybe Error)
+updateEntry ReqUpdateEntry{..} = undefined
+updateEntry _ = return $ Just EBadInput
+

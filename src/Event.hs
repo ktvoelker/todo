@@ -7,5 +7,12 @@ import Query
 import Types
 import Update
 
-makeAcidic ''Database ['findUser, 'getUserProfile, 'register]
+makeAcidic ''Database
+  [ 'findUser
+  , 'getUserProfile
+  , 'getEntries
+  , 'register
+  , 'createEntry
+  , 'updateEntry
+  ]
 

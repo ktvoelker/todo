@@ -38,7 +38,8 @@ Executable todo
     vorple >= 0.1.0.1 && < 0.2,
     parsec >= 3.1 && < 3.2,
     transformers >= 0.3 && < 0.4,
-    split >= 0.2 && < 0.3
+    split >= 0.2 && < 0.3,
+    http-types >= 0.7 && < 0.8
   default-extensions:
     DeriveDataTypeable
     FlexibleContexts
